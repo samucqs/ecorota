@@ -1,0 +1,1865 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#123d32">
+<title>EcoRota — Inteligência Ambiental & Economia Circular</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+  --forest:#123d32;
+  --green:#247653;
+  --mint:#dff2e7;
+  --lime:#c6e86b;
+  --cream:#f7f8f2;
+  --ink:#1b2924;
+  --muted:#718078;
+  --line:#e5eae4;
+  --white:#fff;
+  --shadow:0 12px 35px #163c2b12;
+  --admin:#e67e22;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:"DM Sans",sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;transition:all .15s ease}
+.app{min-height:100vh}
+
+/* Sidebar */
+.sidebar{position:fixed;inset:0 auto 0 0;width:248px;background:var(--forest);color:#fff;padding:27px 18px;display:flex;flex-direction:column;z-index:20}
+.brand{display:flex;align-items:center;gap:11px;padding:0 9px 34px}
+.brandmark{width:42px;height:42px;border-radius:14px;background:var(--lime);display:grid;place-items:center;color:var(--forest);font-size:24px}
+.brand strong{font:800 21px Manrope}
+.brand small{display:block;color:#b7cfc3;font-size:10px;letter-spacing:1.8px;margin-top:2px}
+.navlabel{font-size:10px;letter-spacing:1.6px;color:#9ab6a8;padding:0 12px 10px}
+.nav{display:grid;gap:5px}
+.nav button{border:0;background:transparent;color:#d3e2d9;text-align:left;padding:12px;border-radius:11px;display:flex;gap:12px;align-items:center;font-size:13px}
+.nav button:hover,.nav button.active{background:#ffffff19;color:#fff}
+.nav button.nav-admin{color:#f5b041}
+.nav button.nav-admin:hover,.nav button.nav-admin.active{background:#f5b04128;color:#ffd180}
+.nav .ico{width:20px;text-align:center;font-size:17px}
+.sidefoot{margin-top:auto;border-top:1px solid #ffffff24;padding:17px 10px 0;color:#b7cfc3;font-size:11px;line-height:1.6}
+
+/* Main content */
+.main{margin-left:248px;padding:30px 38px 60px;max-width:1600px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:27px;gap:15px;flex-wrap:wrap}
+.crumb{font-size:12px;color:var(--muted)}
+.crumb b{color:var(--forest)}
+.profile-area{display:flex;align-items:center;gap:12px}
+.profile-card{display:flex;align-items:center;gap:10px;font-size:12px;background:#fff;padding:6px 14px 6px 8px;border-radius:30px;border:1px solid var(--line);box-shadow:var(--shadow)}
+.avatar{width:34px;height:34px;border-radius:50%;background:#d8e9d8;display:grid;place-items:center;color:var(--forest);font-weight:700;font-size:12px}
+.avatar-admin{background:#fbeee6;color:#d35400}
+.user-text{display:grid;line-height:1.2}
+.user-text strong{font-size:12px;color:var(--forest)}
+.user-text small{font-size:10px;color:var(--muted)}
+
+.page{display:none}
+.page.active{display:block}
+.eyebrow{color:var(--green);font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase}
+
+/* Hero */
+.hero{background:var(--forest);border-radius:24px;padding:34px 36px;color:#fff;display:grid;grid-template-columns:1.35fr .65fr;gap:20px;overflow:hidden;position:relative;min-height:245px}
+.hero:after{content:"";position:absolute;width:310px;height:310px;border:1px solid #ffffff1c;border-radius:50%;right:7%;top:-100px;box-shadow:0 0 0 35px #ffffff08,0 0 0 75px #ffffff06}
+.hero h1{font:800 clamp(28px,3.5vw,43px)/1.12 Manrope;margin:13px 0}
+.hero p{color:#d0e0d7;max-width:550px;line-height:1.65;font-size:14px}
+.hero .lime{color:var(--lime)}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+
+/* Buttons */
+.btn{border:0;border-radius:11px;padding:12px 18px;font-weight:700;font-size:12px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn-sm{padding:7px 12px;border-radius:8px;font-size:11px}
+.btn-xs{padding:4px 8px;border-radius:6px;font-size:10px}
+.btn-primary{background:var(--lime);color:var(--forest)}
+.btn-primary:hover{background:#b8dc58}
+.btn-light{background:#ffffff18;color:#fff;border:1px solid #ffffff35}
+.btn-light:hover{background:#ffffff28}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{background:#1b5f42}
+.btn-outline{background:#fff;border:1px solid var(--line);color:var(--forest)}
+.btn-outline:hover{background:#f4f7f4;border-color:#b9cbbd}
+.btn-danger{background:#e74c3c;color:#fff}
+.btn-danger:hover{background:#c0392b}
+.btn-warn{background:#f39c12;color:#fff}
+.btn-warn:hover{background:#d68910}
+
+.hero-art{display:grid;place-items:center;z-index:1}
+.orbit{width:180px;height:180px;border:1px solid #ffffff35;border-radius:50%;display:grid;place-items:center;position:relative}
+.orbit:before,.orbit:after{content:"";position:absolute;border:1px solid #ffffff24;border-radius:50%;inset:20px}
+.orbit:after{inset:42px}
+.orbit span{font-size:68px;filter:drop-shadow(0 10px 20px #0003)}
+
+/* Stats */
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0}
+.stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:17px 18px;box-shadow:var(--shadow)}
+.stathead{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
+.staticon{background:var(--mint);width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:15px}
+.stat strong{display:block;font:800 26px Manrope;margin:9px 0 2px;color:var(--forest)}
+.stat small{font-size:10px;color:var(--muted)}
+
+.sectionhead{display:flex;justify-content:space-between;align-items:end;margin:28px 0 13px}
+.sectionhead h2{font:800 19px Manrope;margin:4px 0}
+.sectionhead p{margin:0;color:var(--muted);font-size:12px}
+
+.grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:17px;padding:20px;box-shadow:var(--shadow)}
+.panel h3{font:700 14px Manrope;margin:0 0 6px}
+.sub{color:var(--muted);font-size:11px;line-height:1.5}
+.quickgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}
+.quick{padding:14px;border:1px solid var(--line);border-radius:13px;text-align:left;background:#fff}
+.quick:hover{border-color:#93b99e;background:#f8fcf7;transform:translateY(-1px)}
+.quick .qico{font-size:21px}
+.quick b{display:block;font-size:12px;margin:8px 0 3px}
+.quick small{font-size:10px;color:var(--muted)}
+.notice{padding:12px 14px;border-radius:12px;background:#f0f7e8;color:#45623c;font-size:11px;line-height:1.5;margin-top:14px}
+.pagehead{margin:8px 0 20px}
+.pagehead h1{font:800 29px Manrope;margin:6px 0}
+.pagehead p{color:var(--muted);font-size:13px;margin:0}
+
+/* Forms */
+.formrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+.field{display:grid;gap:6px;flex:1;min-width:180px}
+.field label{font-size:11px;font-weight:700;color:#52635a}
+.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:#fff;outline:none;color:var(--ink);font-size:12px;transition:border-color .15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green)}
+
+/* EcoIA upload & result */
+.upload{border:1.5px dashed #b9cbbd;border-radius:16px;padding:25px;text-align:center;background:#fbfdf9;margin-top:14px}
+.upload input{max-width:100%;font-size:11px}
+.preview{max-width:220px;max-height:180px;object-fit:contain;border-radius:12px;margin:14px auto 0;display:none}
+.result{display:none;margin-top:15px;padding:17px;border-radius:13px;background:#f0f7e8;border:1px solid #d9e8d1}
+.result.show{display:block}
+.result strong{font:700 16px Manrope;color:var(--forest)}
+.result p{font-size:12px;line-height:1.6;margin:6px 0}
+.tag{display:inline-block;padding:5px 10px;border-radius:30px;background:#e0f0df;color:#35613e;font-size:10px;font-weight:700}
+
+/* Map & List */
+.mapbox{height:440px;border-radius:14px;overflow:hidden;border:1px solid var(--line);margin-top:15px;position:relative}
+.maptools{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.list{display:grid;gap:9px;margin-top:14px;max-height:480px;overflow-y:auto}
+.item{display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff;gap:10px}
+.item b{font-size:12px}
+.item small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.pill{font-size:10px;background:#eff5ef;color:#42634a;padding:5px 8px;border-radius:30px;font-weight:600;white-space:nowrap}
+.pill-verified{background:#dff2e7;color:#1e5e3b}
+.pill-pending{background:#fff3cd;color:#856404}
+.pill-closed{background:#e2e3e5;color:#383d41}
+.pill-admin{background:#fdebd0;color:#b9770e}
+
+/* Points & Bars */
+.pointsbig{font:800 40px Manrope;color:var(--forest)}
+.progress{height:9px;border-radius:9px;background:#e9eee8;overflow:hidden;margin:12px 0}
+.progress span{height:100%;display:block;background:var(--green);width:0%;transition:width .4s ease}
+.bars{display:flex;align-items:end;gap:13px;height:145px;margin-top:20px;padding:0 10px}
+.barcol{flex:1;display:grid;justify-items:center;gap:6px;height:100%;align-content:end}
+.bar{width:100%;max-width:38px;background:#80b994;border-radius:7px 7px 2px 2px;min-height:4px;transition:height .4s ease}
+.barcol small{font-size:9px;color:var(--muted)}
+.barcol b{font-size:9px}
+
+/* Accessibility & Toast */
+.access{position:fixed;right:18px;bottom:18px;z-index:30;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:8px;display:flex;gap:6px}
+.access button{border:0;background:#f1f6f0;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600}
+.toast{position:fixed;bottom:75px;right:20px;background:var(--forest);color:#fff;padding:12px 18px;border-radius:11px;font-size:12px;z-index:90;display:none;box-shadow:0 8px 24px #0003}
+.toast.show{display:block;animation:fadeIn .2s}
+
+/* Modals */
+.modalback{display:none;position:fixed;inset:0;background:#10251dcc;z-index:80;place-items:center;padding:20px}
+.modalback.show{display:grid}
+.modal{background:#fff;border-radius:18px;padding:24px;width:min(500px,100%);box-shadow:0 20px 40px #0004;max-height:90vh;overflow-y:auto}
+.modal h3{font:800 18px Manrope;margin:0 0 4px}
+.modal .field{margin:12px 0}
+.mutedline{font-size:10px;color:var(--muted);line-height:1.6;margin-top:12px}
+
+/* Auth tabs */
+.auth-tabs{display:flex;border-bottom:1px solid var(--line);margin:14px 0 16px}
+.auth-tab{flex:1;background:transparent;border:0;padding:10px;font-weight:700;font-size:12px;color:var(--muted);border-bottom:2px solid transparent}
+.auth-tab.active{color:var(--forest);border-bottom-color:var(--green)}
+
+/* Admin Data Table */
+.admin-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:11px}
+.admin-table th,.admin-table td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left}
+.admin-table th{background:#f8faf8;font-weight:700;color:var(--forest)}
+.admin-table tr:hover td{background:#fafdf9}
+.admin-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0;border-bottom:1px solid var(--line);padding-bottom:10px}
+.admin-tab-btn{background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 14px;font-size:11px;font-weight:700;color:var(--muted)}
+.admin-tab-btn.active{background:var(--forest);color:#fff;border-color:var(--forest)}
+.badge-admin{background:#fdebd0;color:#935116;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.table-responsive{overflow-x:auto;max-width:100%}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:900px){
+  .sidebar{width:76px;padding:20px 10px}
+  .brand{padding:0 7px 30px}
+  .brandtext,.navlabel,.nav button .navtext,.sidefoot{display:none}
+  .nav button{justify-content:center;padding:13px}
+  .nav .ico{font-size:19px}
+  .main{margin-left:76px;padding:24px 22px}
+  .hero{grid-template-columns:1fr}
+  .hero-art{display:none}
+  .statgrid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  .main{padding:18px 13px 80px}
+  .topbar{margin-bottom:18px}
+  .user-text{display:none}
+  .hero{padding:25px 21px;min-height:0}
+  .hero h1{font-size:30px}
+  .statgrid{gap:8px}
+  .stat{padding:13px}
+  .stat strong{font-size:22px}
+  .grid2{grid-template-columns:1fr}
+  .sectionhead{align-items:start;gap:8px}
+  .pagehead h1{font-size:25px}
+  .mapbox{height:340px}
+  .access{right:10px;bottom:10px}
+  .quickgrid{gap:8px}
+}
+.highcontrast{--cream:#fff;--ink:#000;--muted:#333;--line:#777}
+.highcontrast .panel,.highcontrast .stat{border:2px solid #333}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+ <div class="brand"><div class="brandmark">♻</div><div class="brandtext"><strong>EcoRota</strong><small>INTELIGÊNCIA AMBIENTAL</small></div></div>
+ <div class="navlabel">PLATAFORMA</div>
+ <nav class="nav">
+  <button class="active" data-page="inicio"><span class="ico">⌂</span><span class="navtext">Visão geral</span></button>
+  <button data-page="ecoia"><span class="ico">✳</span><span class="navtext">EcoIA · Identificar</span></button>
+  <button data-page="mapa"><span class="ico">⌖</span><span class="navtext">EcoMapa</span></button>
+  <button data-page="pontos"><span class="ico">✧</span><span class="navtext">EcoPontos</span></button>
+  <button data-page="conexao"><span class="ico">⇄</span><span class="navtext">Conexão Verde</span></button>
+  <button data-page="painel"><span class="ico">▥</span><span class="navtext">Painel ambiental</span></button>
+  <div class="navlabel" style="margin-top:14px">DESENVOLVEDOR</div>
+  <button data-page="devchefe" class="nav-admin" id="navDev"><span class="ico">🛠</span><span class="navtext">Dev Chefe</span></button>
+ </nav>
+ <div class="sidefoot">Uma rede regional por um futuro mais sustentável.<br><b>Versão 2.0 Operacional · 2026</b></div>
+</aside>
+
+<main class="main">
+ <header class="topbar">
+   <div class="crumb">EcoRota <span> / </span><b id="crumb">Visão geral</b></div>
+   <div class="profile-area" id="profileArea">
+     <!-- Dynamic user status will be injected here -->
+   </div>
+ </header>
+
+<!-- PÁGINA 1: VISÃO GERAL -->
+<section class="page active" id="inicio">
+ <div class="hero">
+  <div>
+    <div class="eyebrow" style="color:var(--lime)">TECNOLOGIA • ECONOMIA CIRCULAR • IMPACTO</div>
+    <h1>O futuro sustentável<br>começa <span class="lime">em cada escolha.</span></h1>
+    <p>Conectamos pessoas, pontos de coleta e agentes da reciclagem para transformar resíduos em oportunidades e fortalecer a inteligência ambiental regional em Jijoca de Jericoacoara e municípios vizinhos.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="go('ecoia')">✳ Identificar um resíduo</button>
+      <button class="btn btn-light" onclick="go('mapa')">Explorar EcoMapa →</button>
+      <button class="btn btn-light" onclick="go('devchefe')" style="background:#f39c1222;border-color:#f39c1266;color:#ffd180">🛠 Painel Dev Chefe</button>
+    </div>
+  </div>
+  <div class="hero-art"><div class="orbit"><span>🌱</span></div></div>
+ </div>
+
+ <div class="statgrid">
+  <div class="stat"><div class="stathead">Registros ambientais <span class="staticon">♻</span></div><strong id="s-reg">0</strong><small>ações e análises ativas</small></div>
+  <div class="stat"><div class="stathead">Pontos de coleta <span class="staticon">⌖</span></div><strong id="s-points">0</strong><small>cadastrados no EcoMapa</small></div>
+  <div class="stat"><div class="stathead">EcoPontos <span class="staticon">✧</span></div><strong id="s-eco">0</strong><small>acumulados no sistema</small></div>
+  <div class="stat"><div class="stathead">Ofertas Conexão <span class="staticon">⇄</span></div><strong id="s-requests">0</strong><small>materiais disponíveis</small></div>
+ </div>
+
+ <div class="sectionhead">
+  <div><div class="eyebrow">COMECE POR AQUI</div><h2>Um ecossistema em movimento</h2><p>Escolha uma ferramenta para participar da transformação.</p></div>
+ </div>
+
+ <div class="grid2">
+  <div class="panel">
+   <h3>Explore as ferramentas</h3>
+   <div class="quickgrid">
+    <button class="quick" onclick="go('ecoia')"><span class="qico">📷</span><b>EcoIA</b><small>Identifique e classifique resíduos por visão computacional</small></button>
+    <button class="quick" onclick="go('mapa')"><span class="qico">🗺️</span><b>EcoMapa</b><small>Localize e cadastre pontos de entrega</small></button>
+    <button class="quick" onclick="go('pontos')"><span class="qico">🌟</span><b>EcoPontos</b><small>Acumule pontos em ações verificadas</small></button>
+    <button class="quick" onclick="go('conexao')"><span class="qico">🤝</span><b>Conexão Verde</b><small>Conecte geradores a recicladores</small></button>
+   </div>
+  </div>
+
+  <div class="panel">
+   <h3>Integração e Sustentabilidade</h3>
+   <p class="sub">A tecnologia é o meio; o impacto positivo é o objetivo. O EcoRota centraliza os dados de descarte correto, aproxima quem produz materiais de quem os recicla e apoia as metas municipais de gestão integrada de resíduos sólidos.</p>
+   <div class="notice">
+     <b>♧ Painel do Desenvolvedor:</b> Acesso exclusivo para edição e visualização direta do banco de dados na aba lateral <b>Dev Chefe</b>.
+   </div>
+   <p class="mutedline">Área prioritária: Jijoca de Jericoacoara, Cruz, Camocim e municípios litorâneos do Ceará.</p>
+  </div>
+ </div>
+</section>
+
+<!-- PÁGINA 2: ECOIA -->
+<section class="page" id="ecoia">
+ <div class="pagehead">
+   <div class="eyebrow">INTELIGÊNCIA ARTIFICIAL</div>
+   <h1>EcoIA · Identificação Inteligente</h1>
+   <p>Envie uma fotografia para receber análise visual imediata e orientações precisas de manuseio e descarte.</p>
+ </div>
+
+ <div class="grid2">
+  <div class="panel">
+   <h3>Analise seu resíduo</h3>
+   <p class="sub">Fotografe um objeto, com boa iluminação e fundo desobstruído.</p>
+   
+   <div class="upload">
+     <div style="font-size:32px">📸</div>
+     <b style="font-size:13px">Selecione ou fotografe uma imagem</b>
+     <p class="sub">JPG, PNG ou WEBP · até 8 MB</p>
+     <input type="file" id="wasteFile" accept="image/*" style="margin-top:10px">
+     <img id="preview" class="preview" alt="Prévia do resíduo">
+   </div>
+
+   <div class="formrow">
+     <div class="field">
+       <label for="wasteContext">Contexto do resíduo</label>
+       <select id="wasteContext">
+         <option value="residencial">Residencial (Domiciliar)</option>
+         <option value="comercial">Comercial (Restaurante / Loja)</option>
+         <option value="turistico">Turístico (Praia / Pousada)</option>
+         <option value="escolar">Escolar / Comunitário</option>
+       </select>
+     </div>
+   </div>
+
+   <button class="btn btn-green" style="width:100%;margin-top:15px" id="analyzeBtn">✳ Analisar com a EcoIA</button>
+   
+   <div class="result" id="aiResult"></div>
+  </div>
+
+  <div class="panel">
+   <h3>Como funciona a EcoIA?</h3>
+   <div class="list">
+    <div class="item">
+      <div><b>1. Leitura multimodal</b><small>O modelo processa os pixels da imagem e o contexto informado.</small></div>
+      <span class="pill">Visão</span>
+    </div>
+    <div class="item">
+      <div><b>2. Classificação de materiais</b><small>Separação em plástico, papel, vidro, metal, orgânico ou perigoso.</small></div>
+      <span class="pill">Triagem</span>
+    </div>
+    <div class="item">
+      <div><b>3. Rota de destinação</b><small>Apresenta preparo (higienização, segurança) e direcionamento ao EcoMapa.</small></div>
+      <span class="pill">Ação</span>
+    </div>
+   </div>
+
+   <div class="notice">
+     <b>Orientação responsável:</b> Resíduos infectantes hospitalares, pilhas/baterias danificadas ou produtos químicos agressivos devem seguir regulamentação de logística reversa específica.
+   </div>
+   <p class="mutedline" id="aiStatus">Status da IA: Conectado ao servidor EcoRota.</p>
+  </div>
+ </div>
+</section>
+
+<!-- PÁGINA 3: ECOMAPA -->
+<section class="page" id="mapa">
+ <div class="pagehead">
+   <div class="eyebrow">GEORREFERENCIAMENTO REGIONAL</div>
+   <h1>EcoMapa de Coleta Seletiva</h1>
+   <p>Descubra pontos de descarte correto, associações de catadores e ecopontos oficiais.</p>
+ </div>
+
+ <div class="panel">
+  <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+    <div>
+      <h3>Pontos cadastrados na região</h3>
+      <p class="sub">Clique em qualquer local do mapa para preencher coordenadas automaticamente ou use o botão abaixo.</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-outline btn-sm" onclick="locateUserOnMap()">📍 Minha posição</button>
+      <button class="btn btn-green btn-sm" onclick="openModal('pointModal')">＋ Cadastrar novo ponto</button>
+    </div>
+  </div>
+
+  <div id="map" class="mapbox"></div>
+
+  <div class="maptools">
+    <span class="pill pill-verified">● Ponto Verificado</span>
+    <span class="pill">○ Ponto em Análise</span>
+    <span class="pill">Base OpenStreetMap / Leaflet</span>
+    <small style="color:var(--muted);margin-left:auto">Dica: clique no mapa para capturar coordenadas</small>
+  </div>
+
+  <div id="pointList" class="list"></div>
+ </div>
+</section>
+
+<!-- PÁGINA 4: ECOPONTOS -->
+<section class="page" id="pontos">
+ <div class="pagehead">
+   <div class="eyebrow">ENGAJAMENTO & RECONHECIMENTO</div>
+   <h1>EcoPontos</h1>
+   <p>Acompanhe suas ações registradas e sua contribuição para a conservação ambiental.</p>
+ </div>
+
+ <div class="grid2">
+  <div class="panel">
+   <div class="eyebrow">SEU SALDO ATUAL</div>
+   <div class="pointsbig"><span id="ecoBalance">0</span> <span style="font-size:16px;font-weight:600">EP</span></div>
+   <p class="sub">Pontos vinculados ao seu cadastro nesta rede.</p>
+   
+   <div class="progress"><span id="progressbar"></span></div>
+   <p class="sub" id="progressText">Nível 1 · Iniciante sustentável</p>
+   
+   <button class="btn btn-green" style="margin-top:10px" onclick="openActionModal()">＋ Registrar ação sustentável</button>
+  </div>
+
+  <div class="panel">
+   <h3>Como funciona a pontuação?</h3>
+   <div class="list">
+    <div class="item">
+      <div><b>Entrega de recicláveis em Ecoponto</b><small>Descarte verificado de papelão, PET, latas ou vidro.</small></div>
+      <span class="pill">+20 EP</span>
+    </div>
+    <div class="item">
+      <div><b>Participação em mutirão de limpeza</b><small>Ação coletiva em praias, dunas ou lagoas.</small></div>
+      <span class="pill">+30 EP</span>
+    </div>
+    <div class="item">
+      <div><b>Cadastro de novo ponto no EcoMapa</b><small>Mapeamento de local útil e acessível à população.</small></div>
+      <span class="pill">+15 EP</span>
+    </div>
+   </div>
+   <div class="notice">Os EcoPontos apoiam programas de incentivo comunitário, certificados verdes e parcerias locais.</div>
+  </div>
+ </div>
+
+ <div class="panel" style="margin-top:16px">
+   <h3>Histórico das suas ações</h3>
+   <div id="ecoHistory" class="list"></div>
+ </div>
+</section>
+
+<!-- PÁGINA 5: CONEXÃO VERDE -->
+<section class="page" id="conexao">
+ <div class="pagehead">
+   <div class="eyebrow">ECONOMIA CIRCULAR</div>
+   <h1>Conexão Verde</h1>
+   <p>Conecte geradores de recicláveis (pousadas, restaurantes, lares) com recicladores e associações da região.</p>
+ </div>
+
+ <div class="grid2">
+  <div class="panel">
+   <h3>Disponibilizar material reciclável</h3>
+   <p class="sub">Cadastre seu lote de materiais para que catadores e recicladores parceiros possam retirar.</p>
+
+   <div class="field" style="margin-top:14px">
+     <label for="offerType">Tipo de material disponível</label>
+     <select id="offerType">
+       <option>Plástico (PET / PEAD / Filme)</option>
+       <option>Papel e papelão comercial</option>
+       <option>Vidro (Garrafas / Potes)</option>
+       <option>Latas de alumínio e sucatas metálicas</option>
+       <option>Óleo de cozinha vegetal usado</option>
+       <option>Resíduos eletroeletrônicos</option>
+       <option>Outros recicláveis</option>
+     </select>
+   </div>
+
+   <div class="formrow">
+     <div class="field">
+       <label for="offerQty">Quantidade aproximada</label>
+       <input id="offerQty" placeholder="Ex.: 5 sacos de 50L, 20 kg">
+     </div>
+     <div class="field">
+       <label for="offerPlace">Município / Localidade</label>
+       <input id="offerPlace" placeholder="Ex.: Vila de Jericoacoara">
+     </div>
+   </div>
+
+   <div class="field" style="margin-top:12px">
+     <label for="offerContact">Contato público para retirada</label>
+     <input id="offerContact" placeholder="Telefone / WhatsApp comercial ou e-mail institucional">
+   </div>
+
+   <div class="field" style="margin-top:12px">
+     <label for="offerNotes">Observações ou instruções de retirada (opcional)</label>
+     <textarea id="offerNotes" rows="2" placeholder="Ex.: Retirada no fundo da pousada das 14h às 18h"></textarea>
+   </div>
+
+   <button class="btn btn-green" style="margin-top:14px;width:100%" onclick="submitOffer()">Publicar oferta de material</button>
+  </div>
+
+  <div class="panel">
+   <h3>Mural de Ofertas Ativas</h3>
+   <p class="sub">Lotes disponíveis para coleta organizada.</p>
+   <div id="offerList" class="list"></div>
+   <div class="notice">
+     <b>Segurança no transporte:</b> Certifique-se de embalar garrafas de vidro e latas cortantes com segurança antes da entrega ao parceiro coletor.
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- PÁGINA 6: PAINEL AMBIENTAL -->
+<section class="page" id="painel">
+ <div class="pagehead">
+   <div class="eyebrow">DADOS E MONITORAMENTO</div>
+   <h1>Painel Ambiental</h1>
+   <p>Métricas consolidadas em tempo real sobre a destinação e a triagem de resíduos no projeto.</p>
+ </div>
+
+ <div class="statgrid">
+  <div class="stat"><div class="stathead">Total de registros <span class="staticon">♻</span></div><strong id="p-reg">0</strong><small>análises e ações no banco</small></div>
+  <div class="stat"><div class="stathead">Pontos cadastrados <span class="staticon">⌖</span></div><strong id="p-points">0</strong><small>locais mapeados</small></div>
+  <div class="stat"><div class="stathead">Ofertas na rede <span class="staticon">⇄</span></div><strong id="p-offers">0</strong><small>lotes compartilhados</small></div>
+  <div class="stat"><div class="stathead">EcoPontos totais <span class="staticon">✧</span></div><strong id="p-eco">0</strong><small>EP concedidos</small></div>
+ </div>
+
+ <div class="grid2">
+  <div class="panel">
+   <h3>Distribuição por Categoria de Resíduo</h3>
+   <p class="sub">Materiais submetidos e triados pela EcoIA.</p>
+   <div id="bars" class="bars"></div>
+  </div>
+
+  <div class="panel">
+   <h3>Transparência e Exportação de Dados</h3>
+   <p class="sub">Os dados são sincronizados com a API central do EcoRota. Você pode exportar o relatório consolidado em formato aberto (CSV) para pesquisas acadêmicas, prestação de contas ou auditoria municipal.</p>
+   <button class="btn btn-outline" style="margin-top:16px;width:100%" onclick="downloadCSV()">↓ Baixar Relatório Completo (CSV)</button>
+  </div>
+ </div>
+</section>
+
+<!-- PÁGINA 7: DESENVOLVEDOR CHEFE (ABA ADMINISTRATIVA) -->
+<section class="page" id="devchefe">
+  <div class="pagehead">
+    <div class="eyebrow" style="color:var(--admin)">ÁREA DE ENGENHARIA & CONTROLE</div>
+    <h1>Painel do Desenvolvedor Chefe</h1>
+    <p>Gestão e edição direta de todas as tabelas e registros do banco de dados.</p>
+  </div>
+
+  <!-- Gate de Login Admin (Exibido se não estiver logado como admin) -->
+  <div id="adminGate" class="panel" style="max-width:520px;margin:30px auto;text-align:center;padding:32px">
+    <div style="font-size:44px;margin-bottom:10px">🛠️</div>
+    <h3 style="font-size:18px">Acesso Restrito ao Desenvolvedor Chefe</h3>
+    <p class="sub">Faça login com as credenciais administrativas para inspecionar, editar e gerenciar as tabelas do sistema.</p>
+    
+    <div style="text-align:left;margin-top:20px">
+      <div class="field">
+        <label>Usuário</label>
+        <input type="text" id="adminUserField" placeholder="Digite o usuário">
+      </div>
+      <div class="field" style="margin-top:12px">
+        <label>Senha</label>
+        <input type="password" id="adminPassField" placeholder="••••••••">
+      </div>
+      <button class="btn btn-green" style="width:100%;margin-top:18px;background:var(--admin)" onclick="adminDirectLogin()">
+        🔓 Desbloquear Painel Dev Chefe
+      </button>
+    </div>
+  </div>
+
+  <!-- Conteúdo do Painel Admin (Exibido após login) -->
+  <div id="adminContent" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div class="badge-admin">
+        <span>⚡ Modo Desenvolvedor Chefe Ativo</span>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline btn-sm" onclick="loadAdminData()">🔄 Atualizar Dados</button>
+        <button class="btn btn-outline btn-sm" onclick="downloadAdminJSON()">💾 Backup Completo (JSON)</button>
+      </div>
+    </div>
+
+    <!-- Navegação de Sub-abas do Banco -->
+    <div class="admin-tabs">
+      <button class="admin-tab-btn active" onclick="switchAdminTab('pointsTab')">📌 Pontos de Coleta (<span id="cntPoints">0</span>)</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('usersTab')">👥 Usuários & Perfis (<span id="cntUsers">0</span>)</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('offersTab')">⇄ Ofertas Conexão (<span id="cntOffers">0</span>)</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('actionsTab')">🌟 Ações Sustentáveis (<span id="cntActions">0</span>)</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('analysesTab')">📷 Análises EcoIA (<span id="cntAnalyses">0</span>)</button>
+    </div>
+
+    <!-- Tabela 1: Pontos de Coleta -->
+    <div class="panel admin-pane" id="pointsTab">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3>Tabela: collection_points</h3>
+        <button class="btn btn-green btn-xs" onclick="openModal('pointModal')">＋ Inserir Novo Ponto</button>
+      </div>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Materiais</th>
+              <th>Município / Endereço</th>
+              <th>Coordenadas</th>
+              <th>Verificação</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyPoints"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tabela 2: Usuários -->
+    <div class="panel admin-pane" id="usersTab" style="display:none">
+      <h3>Tabela: users</h3>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email / Login</th>
+              <th>Perfil (Role)</th>
+              <th>Município</th>
+              <th>Data Criação</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyUsers"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tabela 3: Ofertas -->
+    <div class="panel admin-pane" id="offersTab" style="display:none">
+      <h3>Tabela: recycling_offers</h3>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Material</th>
+              <th>Quantidade</th>
+              <th>Localidade</th>
+              <th>Contato / Obs</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyOffers"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tabela 4: Ações Sustentáveis -->
+    <div class="panel admin-pane" id="actionsTab" style="display:none">
+      <h3>Tabela: eco_actions</h3>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Usuário</th>
+              <th>Tipo</th>
+              <th>Descrição</th>
+              <th>Pontos (EP)</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyActions"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tabela 5: Análises EcoIA -->
+    <div class="panel admin-pane" id="analysesTab" style="display:none">
+      <h3>Tabela: waste_analyses</h3>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th>Confiança</th>
+              <th>Modo</th>
+              <th>Observação Visual / Cuidados</th>
+              <th>Data</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyAnalyses"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="mutedline" style="text-align:center;margin-top:38px">
+  EcoRota · Plataforma de Inteligência Ambiental e Economia Circular · Jericoacoara 2026
+</footer>
+</main>
+</div>
+
+<!-- Accessibility floating buttons -->
+<div class="access">
+  <button onclick="document.body.classList.toggle('highcontrast')" title="Alternar alto contraste">◐ Contraste</button>
+  <button onclick="speakPage()" title="Leitura da página">🔊 Ler</button>
+</div>
+
+<!-- Toast notifications -->
+<div class="toast" id="toast"></div>
+
+<!-- Modal: Cadastrar Ponto -->
+<div class="modalback" id="pointModal">
+  <div class="modal">
+    <h3>Cadastrar Ponto de Coleta</h3>
+    <p class="sub">Adicione um novo local confiável ao EcoMapa regional.</p>
+    
+    <div class="field">
+      <label for="pointName">Nome do local</label>
+      <input id="pointName" placeholder="Ex.: Ecoponto Comunitário Jeri">
+    </div>
+    
+    <div class="field">
+      <label for="pointMaterial">Materiais aceitos</label>
+      <input id="pointMaterial" placeholder="Ex.: Plástico, Vidro, Latas de Alumínio">
+    </div>
+
+    <div class="field">
+      <label for="pointMunicipality">Município</label>
+      <input id="pointMunicipality" value="Jijoca de Jericoacoara">
+    </div>
+
+    <div class="field">
+      <label for="pointAddress">Endereço / Referência (opcional)</label>
+      <input id="pointAddress" placeholder="Ex.: Próximo à praça principal">
+    </div>
+    
+    <div class="formrow">
+      <div class="field">
+        <label for="pointLat">Latitude</label>
+        <input id="pointLat" type="number" step="any" placeholder="-2.8052">
+      </div>
+      <div class="field">
+        <label for="pointLng">Longitude</label>
+        <input id="pointLng" type="number" step="any" placeholder="-40.5124">
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-outline btn-sm" onclick="locateUserForPoint()" style="margin-top:6px;width:100%">
+      📍 Capturar minha localização GPS atual
+    </button>
+    
+    <div style="display:flex;gap:8px;margin-top:18px">
+      <button class="btn btn-green" style="flex:1" onclick="submitPoint()">Salvar no Mapa</button>
+      <button class="btn btn-outline" onclick="closeModal('pointModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Registrar Ação Sustentável -->
+<div class="modalback" id="actionModal">
+  <div class="modal">
+    <h3>Registrar Ação Sustentável</h3>
+    <p class="sub">Acumule EcoPontos registrando sua contribuição ecológica.</p>
+    
+    <div class="field">
+      <label for="actionType">Tipo de ação</label>
+      <select id="actionType">
+        <option value="entrega">Entrega de recicláveis (+20 EP)</option>
+        <option value="mutirao">Participação em mutirão de limpeza (+30 EP)</option>
+        <option value="ponto">Cadastro de ponto no mapa (+15 EP)</option>
+      </select>
+    </div>
+    
+    <div class="field">
+      <label for="actionDesc">Descrição da ação</label>
+      <input id="actionDesc" placeholder="Ex.: Entreguei 10 garrafas de vidro no ecoponto central">
+    </div>
+
+    <div class="field">
+      <label for="actionEvidence">Link de foto/evidência (opcional)</label>
+      <input id="actionEvidence" placeholder="https://...">
+    </div>
+    
+    <div style="display:flex;gap:8px;margin-top:18px">
+      <button class="btn btn-green" style="flex:1" onclick="submitAction()">Registrar Ação</button>
+      <button class="btn btn-outline" onclick="closeModal('actionModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Login / Cadastro -->
+<div class="modalback" id="authModal">
+  <div class="modal">
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Entrar</button>
+      <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Criar Conta</button>
+    </div>
+
+    <!-- Login form -->
+    <div id="loginForm">
+      <div class="field">
+        <label for="loginEmail">E-mail ou Usuário</label>
+        <input type="text" id="loginEmail" placeholder="seu@email.com">
+      </div>
+      <div class="field">
+        <label for="loginPassword">Senha</label>
+        <input type="password" id="loginPassword" placeholder="••••••••">
+      </div>
+      <button class="btn btn-green" style="width:100%;margin-top:14px" onclick="submitLogin()">Entrar na Plataforma</button>
+    </div>
+
+    <!-- Register form -->
+    <div id="registerForm" style="display:none">
+      <div class="field">
+        <label for="regName">Nome completo</label>
+        <input id="regName" placeholder="Ex.: Maria de Fátima">
+      </div>
+      <div class="field">
+        <label for="regEmail">E-mail</label>
+        <input type="email" id="regEmail" placeholder="seu@email.com">
+      </div>
+      <div class="field">
+        <label for="regPassword">Senha (mínimo 6 caracteres)</label>
+        <input type="password" id="regPassword" placeholder="••••••••">
+      </div>
+      <div class="field">
+        <label for="regRole">Perfil de atuação</label>
+        <select id="regRole">
+          <option value="resident">Morador / Cidadão</option>
+          <option value="tourist">Turista / Visitante</option>
+          <option value="business">Comércio / Restaurante / Pousada</option>
+          <option value="recycler">Catador / Cooperativa de Reciclagem</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="regMunicipality">Município</label>
+        <input id="regMunicipality" value="Jijoca de Jericoacoara">
+      </div>
+      <button class="btn btn-green" style="width:100%;margin-top:14px" onclick="submitRegister()">Criar Conta Gratuita</button>
+    </div>
+
+    <div style="margin-top:14px;text-align:right">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('authModal')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ============================================================
+   State Management & Session
+   ============================================================ */
+const API_BASE = window.location.origin.includes('http') ? window.location.origin : 'http://127.0.0.1:8000';
+let authToken = localStorage.getItem('ecorota_token') || null;
+let currentUser = JSON.parse(localStorage.getItem('ecorota_user') || 'null');
+let map = null;
+let markers = [];
+let tempPin = null;
+
+let localData = {
+  points: [],
+  offers: [],
+  actions: [],
+  stats: { points_count: 0, offers_count: 0, actions_count: 0, analyses_count: 0, total_registrations: 0, total_eco_points: 0, categories: {} }
+};
+
+let adminDataCache = null;
+
+/* Helper for authenticated fetch */
+async function api(endpoint, options = {}) {
+  options.headers = options.headers || {};
+  if (authToken) {
+    options.headers['Authorization'] = `Bearer ${authToken}`;
+  }
+  try {
+    const res = await fetch(`${API_BASE}${endpoint}`, options);
+    if (res.status === 401 && authToken) {
+      logout(false);
+      toast('Sessão expirada. Faça login novamente.');
+      throw new Error('Sessão expirada');
+    }
+    return res;
+  } catch (err) {
+    console.warn(`Fetch error for ${endpoint}:`, err);
+    throw err;
+  }
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function esc(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function go(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === id));
+  document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.page === id));
+  
+  const titles = {
+    inicio: 'Visão geral',
+    ecoia: 'EcoIA · Identificar',
+    mapa: 'EcoMapa',
+    pontos: 'EcoPontos',
+    conexao: 'Conexão Verde',
+    painel: 'Painel ambiental',
+    devchefe: 'Dev Chefe'
+  };
+  document.getElementById('crumb').textContent = titles[id] || 'EcoRota';
+  
+  if (id === 'mapa') setTimeout(initMap, 150);
+  if (id === 'painel') loadStats();
+  if (id === 'devchefe') checkAdminView();
+  window.scrollTo(0, 0);
+}
+
+document.querySelectorAll('.nav button').forEach(b => {
+  b.addEventListener('click', () => go(b.dataset.page));
+});
+
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+/* ============================================================
+   Authentication UI & Functions
+   ============================================================ */
+function renderProfile() {
+  const area = document.getElementById('profileArea');
+  if (currentUser) {
+    const isAdmin = currentUser.role === 'admin';
+    const initials = (currentUser.display_name || currentUser.email || 'ER')
+      .split(' ')
+      .map(w => w[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+
+    const roleMap = {
+      resident: 'Morador',
+      tourist: 'Turista',
+      business: 'Comércio / Pousada',
+      recycler: 'Catador / Reciclador',
+      admin: 'Dev Chefe'
+    };
+    const roleLabel = roleMap[currentUser.role] || 'Cidadão';
+
+    area.innerHTML = `
+      <div class="profile-card">
+        <div class="avatar ${isAdmin ? 'avatar-admin' : ''}">${isAdmin ? '⚡' : initials}</div>
+        <div class="user-text">
+          <strong>${esc(currentUser.display_name || currentUser.email)}</strong>
+          <small style="${isAdmin ? 'color:#d35400;font-weight:700' : ''}">${roleLabel}</small>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="logout(true)" title="Sair da conta">Sair</button>
+    `;
+  } else {
+    area.innerHTML = `
+      <button class="btn btn-primary btn-sm" onclick="openAuthModal()">🔑 Entrar / Cadastrar</button>
+    `;
+  }
+}
+
+function openAuthModal() {
+  switchAuthTab('login');
+  openModal('authModal');
+}
+
+function switchAuthTab(tab) {
+  const tabLogin = document.getElementById('tabLogin');
+  const tabRegister = document.getElementById('tabRegister');
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+
+  if (tab === 'login') {
+    tabLogin.classList.add('active');
+    tabRegister.classList.remove('active');
+    loginForm.style.display = 'block';
+    registerForm.style.display = 'none';
+  } else {
+    tabLogin.classList.remove('active');
+    tabRegister.classList.add('active');
+    loginForm.style.display = 'none';
+    registerForm.style.display = 'block';
+  }
+}
+
+async function submitLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+
+  if (!email || !password) {
+    toast('Preencha e-mail e senha.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      toast(data.detail || 'Falha no login.');
+      return;
+    }
+
+    authToken = data.token;
+    currentUser = data.user;
+    localStorage.setItem('ecorota_token', authToken);
+    localStorage.setItem('ecorota_user', JSON.stringify(currentUser));
+
+    renderProfile();
+    closeModal('authModal');
+    toast(`Bem-vindo(a), ${currentUser.display_name}!`);
+    loadUserData();
+    checkAdminView();
+  } catch (err) {
+    toast('Erro de conexão com o servidor.');
+  }
+}
+
+async function submitRegister() {
+  const display_name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const role = document.getElementById('regRole').value;
+  const municipality = document.getElementById('regMunicipality').value.trim();
+
+  if (!display_name || !email || !password) {
+    toast('Preencha os campos obrigatórios.');
+    return;
+  }
+  if (password.length < 6) {
+    toast('A senha deve ter no mínimo 6 caracteres.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ display_name, email, password, role, municipality })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      toast(data.detail || 'Erro ao registrar.');
+      return;
+    }
+
+    authToken = data.token;
+    currentUser = data.user;
+    localStorage.setItem('ecorota_token', authToken);
+    localStorage.setItem('ecorota_user', JSON.stringify(currentUser));
+
+    renderProfile();
+    closeModal('authModal');
+    toast(`Conta criada com sucesso! Olá, ${currentUser.display_name}.`);
+    loadUserData();
+  } catch (err) {
+    toast('Erro de conexão ao criar conta.');
+  }
+}
+
+function logout(notify = true) {
+  authToken = null;
+  currentUser = null;
+  localStorage.removeItem('ecorota_token');
+  localStorage.removeItem('ecorota_user');
+  renderProfile();
+  document.getElementById('ecoBalance').textContent = '0';
+  document.getElementById('ecoHistory').innerHTML = '<p class="sub">Faça login para ver seu histórico de EcoPontos.</p>';
+  checkAdminView();
+  if (notify) toast('Sessão encerrada.');
+}
+
+/* ============================================================
+   Map (EcoMapa) & Geolocation
+   ============================================================ */
+function initMap() {
+  if (map) {
+    map.invalidateSize();
+    return;
+  }
+  const el = document.getElementById('map');
+  if (!el || !window.L) return;
+
+  map = L.map('map').setView([-2.8052, -40.5124], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap colaboradores'
+  }).addTo(map);
+
+  map.on('click', function(e) {
+    const lat = e.latlng.lat.toFixed(5);
+    const lng = e.latlng.lng.toFixed(5);
+
+    if (tempPin) map.removeLayer(tempPin);
+    tempPin = L.marker([lat, lng], { opacity: 0.8 }).addTo(map)
+      .bindPopup(`<b>Local selecionado</b><br>Lat: ${lat}<br>Lng: ${lng}`).openPopup();
+
+    document.getElementById('pointLat').value = lat;
+    document.getElementById('pointLng').value = lng;
+    openModal('pointModal');
+    toast(`Coordenadas capturadas: ${lat}, ${lng}`);
+  });
+
+  drawMarkers();
+}
+
+function drawMarkers() {
+  if (!map) return;
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+
+  localData.points.forEach(p => {
+    const isVer = p.verified;
+    const marker = L.circleMarker([p.latitude, p.longitude], {
+      radius: 9,
+      fillColor: isVer ? '#247653' : '#c6e86b',
+      color: '#123d32',
+      weight: 2,
+      opacity: 1,
+      fillOpacity: 0.9
+    }).addTo(map);
+
+    marker.bindPopup(`
+      <div style="font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.5">
+        <strong style="color:#123d32;font-size:13px">${esc(p.name)}</strong><br>
+        <span style="color:#666">${esc(p.materials)}</span><br>
+        <small style="color:#888">${esc(p.municipality || 'Jijoca de Jericoacoara')}</small><br>
+        <span style="display:inline-block;margin-top:4px;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:700;background:${isVer ? '#dff2e7' : '#fff3cd'};color:${isVer ? '#1e5e3b' : '#856404'}">
+          ${isVer ? 'Ponto Verificado' : 'Em Análise Comunitária'}
+        </span>
+      </div>
+    `);
+    markers.push(marker);
+  });
+}
+
+function renderPointsList() {
+  const container = document.getElementById('pointList');
+  if (!localData.points.length) {
+    container.innerHTML = '<p class="sub">Nenhum ponto cadastrado. Clique no mapa para adicionar o primeiro!</p>';
+    return;
+  }
+  container.innerHTML = localData.points.map(p => `
+    <div class="item">
+      <div>
+        <b>${esc(p.name)}</b>
+        <small>${esc(p.materials)} · ${esc(p.municipality || '')} (${Number(p.latitude).toFixed(4)}, ${Number(p.longitude).toFixed(4)})</small>
+      </div>
+      <span class="pill ${p.verified ? 'pill-verified' : ''}">${p.verified ? 'Verificado' : 'Cadastrado'}</span>
+    </div>
+  `).join('');
+}
+
+function locateUserOnMap() {
+  if (!navigator.geolocation) {
+    toast('Geolocalização não suportada neste dispositivo.');
+    return;
+  }
+  toast('Obtendo sinal GPS…');
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      if (map) {
+        map.setView([lat, lng], 14);
+        L.marker([lat, lng]).addTo(map).bindPopup('<b>Você está aqui</b>').openPopup();
+      }
+      toast('Localização encontrada!');
+    },
+    () => toast('Não foi possível obter a localização exata.'),
+    { enableHighAccuracy: true, timeout: 8000 }
+  );
+}
+
+function locateUserForPoint() {
+  if (!navigator.geolocation) {
+    toast('Geolocalização não suportada.');
+    return;
+  }
+  toast('Capturando GPS…');
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      document.getElementById('pointLat').value = pos.coords.latitude.toFixed(6);
+      document.getElementById('pointLng').value = pos.coords.longitude.toFixed(6);
+      toast('Coordenadas preenchidas via GPS!');
+    },
+    () => toast('Falha ao obter coordenadas GPS.'),
+    { enableHighAccuracy: true, timeout: 8000 }
+  );
+}
+
+async function submitPoint() {
+  const name = document.getElementById('pointName').value.trim();
+  const materials = document.getElementById('pointMaterial').value.trim();
+  const municipality = document.getElementById('pointMunicipality').value.trim();
+  const address = document.getElementById('pointAddress').value.trim();
+  const lat = parseFloat(document.getElementById('pointLat').value);
+  const lng = parseFloat(document.getElementById('pointLng').value);
+
+  if (!name || !materials || isNaN(lat) || isNaN(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+    toast('Preencha os campos obrigatórios e confira as coordenadas.');
+    return;
+  }
+
+  try {
+    const res = await api('/api/points', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, materials, municipality, address, latitude: lat, longitude: lng })
+    });
+    if (!res.ok) throw new Error('Falha ao salvar ponto');
+    
+    closeModal('pointModal');
+    ['pointName', 'pointMaterial', 'pointAddress', 'pointLat', 'pointLng'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    if (tempPin && map) {
+      map.removeLayer(tempPin);
+      tempPin = null;
+    }
+    toast('Ponto cadastrado com sucesso!');
+    await loadPoints();
+    await loadStats();
+    if (currentUser && currentUser.role === 'admin') loadAdminData();
+  } catch (err) {
+    toast('Erro ao registrar ponto no servidor.');
+  }
+}
+
+/* ============================================================
+   EcoIA (Classification)
+   ============================================================ */
+const fileInput = document.getElementById('wasteFile');
+let selectedFile = null;
+
+fileInput.addEventListener('change', () => {
+  selectedFile = fileInput.files[0];
+  const img = document.getElementById('preview');
+  if (!selectedFile) {
+    img.style.display = 'none';
+    return;
+  }
+  if (selectedFile.size > 8 * 1024 * 1024) {
+    toast('A imagem deve ter no máximo 8 MB.');
+    fileInput.value = '';
+    return;
+  }
+  img.src = URL.createObjectURL(selectedFile);
+  img.style.display = 'block';
+  document.getElementById('aiResult').classList.remove('show');
+});
+
+document.getElementById('analyzeBtn').addEventListener('click', async () => {
+  if (!selectedFile) {
+    toast('Selecione ou fotografe uma imagem primeiro.');
+    return;
+  }
+
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  btn.textContent = 'Processando análise visual…';
+
+  try {
+    const fd = new FormData();
+    fd.append('file', selectedFile);
+    fd.append('context', document.getElementById('wasteContext').value);
+
+    const headers = {};
+    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+    const res = await fetch(`${API_BASE}/api/classify`, {
+      method: 'POST',
+      headers,
+      body: fd
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.detail || 'Serviço de análise indisponível');
+    }
+
+    const data = await res.json();
+    displayAIResult(data);
+    toast('Análise concluída com sucesso!');
+    loadStats();
+    if (currentUser && currentUser.role === 'admin') loadAdminData();
+  } catch (err) {
+    toast(`Erro na análise: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✳ Analisar com a EcoIA';
+  }
+});
+
+function displayAIResult(data) {
+  const box = document.getElementById('aiResult');
+  box.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span class="tag">${esc(data.mode || 'EcoIA')}</span>
+      <span class="pill">Confiança: ${esc(data.confidence || 'Média')}</span>
+    </div>
+    <p style="margin:8px 0 2px;color:#66766b;font-size:10px;text-transform:uppercase;font-weight:700">Categoria Identificada</p>
+    <strong>${esc(data.category || 'Material em Análise')}</strong>
+    ${data.visual_observation ? `<p style="margin-top:6px;font-style:italic;color:#3d5945">${esc(data.visual_observation)}</p>` : ''}
+    <p style="margin-top:8px"><b>Orientação de descarte:</b> ${esc(data.guidance || 'Consulte os ecopontos disponíveis no mapa.')}</p>
+    <p><b>Cuidados ambientais:</b> ${esc(data.care || 'Higienize antes de destinar.')}</p>
+  `;
+  box.classList.add('show');
+}
+
+/* ============================================================
+   EcoPontos & Ações
+   ============================================================ */
+function openActionModal() {
+  if (!currentUser) {
+    toast('Faça login ou crie sua conta para registrar ações e acumular EcoPontos.');
+    openAuthModal();
+    return;
+  }
+  openModal('actionModal');
+}
+
+async function submitAction() {
+  if (!currentUser) {
+    toast('Faça login para continuar.');
+    return;
+  }
+
+  const action_type = document.getElementById('actionType').value;
+  const description = document.getElementById('actionDesc').value.trim();
+  const evidence_url = document.getElementById('actionEvidence').value.trim();
+
+  if (!description) {
+    toast('Descreva a ação realizada.');
+    return;
+  }
+
+  try {
+    const res = await api('/api/actions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action_type, description, evidence_url })
+    });
+    if (!res.ok) throw new Error('Falha ao salvar ação');
+    
+    closeModal('actionModal');
+    document.getElementById('actionDesc').value = '';
+    document.getElementById('actionEvidence').value = '';
+    toast('Ação registrada com sucesso! Seus EcoPontos foram atualizados.');
+    await loadUserData();
+    await loadStats();
+    if (currentUser && currentUser.role === 'admin') loadAdminData();
+  } catch (err) {
+    toast('Erro ao registrar ação.');
+  }
+}
+
+async function loadUserData() {
+  if (!currentUser) return;
+  try {
+    const res = await api('/api/me');
+    if (res.ok) {
+      const u = await res.json();
+      const points = u.eco_points || 0;
+      document.getElementById('ecoBalance').textContent = points;
+      document.getElementById('progressbar').style.width = `${Math.min(100, points % 100)}%`;
+      document.getElementById('progressText').textContent = points > 0 
+        ? `${points} EcoPontos acumulados. Nível: Guardião Verde!`
+        : 'Você está começando sua jornada.';
+    }
+
+    const actRes = await api('/api/actions');
+    if (actRes.ok) {
+      const actions = await actRes.json();
+      renderActionsList(actions);
+    }
+  } catch (err) {
+    console.warn('Erro ao carregar dados do usuário:', err);
+  }
+}
+
+function renderActionsList(actions) {
+  const container = document.getElementById('ecoHistory');
+  if (!actions.length) {
+    container.innerHTML = '<p class="sub">Nenhuma ação registrada ainda.</p>';
+    return;
+  }
+  container.innerHTML = actions.map(a => `
+    <div class="item">
+      <div>
+        <b>${esc(a.description)}</b>
+        <small>${new Date(a.created_at).toLocaleString('pt-BR')}</small>
+      </div>
+      <span class="pill">+${a.points_awarded} EP</span>
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   Conexão Verde (Offers)
+   ============================================================ */
+async function submitOffer() {
+  const material = document.getElementById('offerType').value;
+  const quantity = document.getElementById('offerQty').value.trim();
+  const municipality = document.getElementById('offerPlace').value.trim();
+  const contact = document.getElementById('offerContact').value.trim();
+  const notes = document.getElementById('offerNotes').value.trim();
+
+  if (!quantity || !municipality) {
+    toast('Informe a quantidade aproximada e a localidade.');
+    return;
+  }
+
+  try {
+    const res = await api('/api/offers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ material, quantity, municipality, contact, notes })
+    });
+    if (!res.ok) throw new Error('Falha ao enviar oferta');
+
+    document.getElementById('offerQty').value = '';
+    document.getElementById('offerNotes').value = '';
+    toast('Oferta de material disponibilizada na rede!');
+    await loadOffers();
+    await loadStats();
+    if (currentUser && currentUser.role === 'admin') loadAdminData();
+  } catch (err) {
+    toast('Erro ao registrar oferta.');
+  }
+}
+
+async function loadOffers() {
+  try {
+    const res = await api('/api/offers');
+    if (res.ok) {
+      localData.offers = await res.json();
+      renderOffersList();
+    }
+  } catch (err) {
+    console.warn('Erro ao carregar ofertas:', err);
+  }
+}
+
+function renderOffersList() {
+  const container = document.getElementById('offerList');
+  if (!localData.offers.length) {
+    container.innerHTML = '<p class="sub">Nenhuma oferta cadastrada no momento.</p>';
+    return;
+  }
+  container.innerHTML = localData.offers.map(o => `
+    <div class="item">
+      <div>
+        <b>${esc(o.material)} · ${esc(o.quantity)}</b>
+        <small>${esc(o.municipality)}${o.contact ? ' · Contato: ' + esc(o.contact) : ''}</small>
+        ${o.notes ? `<small style="color:#52635a;margin-top:2px">Obs: ${esc(o.notes)}</small>` : ''}
+      </div>
+      <span class="pill">${o.status === 'pending' ? 'Disponível' : esc(o.status)}</span>
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   Painel Ambiental & Statistics
+   ============================================================ */
+async function loadPoints() {
+  try {
+    const res = await api('/api/points');
+    if (res.ok) {
+      localData.points = await res.json();
+      renderPointsList();
+      if (map) drawMarkers();
+    }
+  } catch (err) {
+    console.warn('Erro ao carregar pontos:', err);
+  }
+}
+
+async function loadStats() {
+  try {
+    const res = await api('/api/stats');
+    if (res.ok) {
+      localData.stats = await res.json();
+      const s = localData.stats;
+      document.getElementById('s-reg').textContent = s.total_registrations;
+      document.getElementById('p-reg').textContent = s.total_registrations;
+      document.getElementById('s-points').textContent = s.points_count;
+      document.getElementById('p-points').textContent = s.points_count;
+      document.getElementById('s-requests').textContent = s.offers_count;
+      document.getElementById('p-offers').textContent = s.offers_count;
+      document.getElementById('s-eco').textContent = s.total_eco_points;
+      document.getElementById('p-eco').textContent = s.total_eco_points;
+      drawBars(s.categories);
+    }
+  } catch (err) {
+    console.warn('Erro ao carregar estatísticas:', err);
+  }
+}
+
+function drawBars(cats = {}) {
+  const container = document.getElementById('bars');
+  const labels = ['Plástico', 'Papel', 'Vidro', 'Metal', 'Orgânico', 'Outros'];
+  const values = labels.map(l => cats[l] || 0);
+  const max = Math.max(1, ...values);
+
+  container.innerHTML = labels.map((label, idx) => {
+    const val = values[idx];
+    const height = Math.max(4, Math.round((val / max) * 100));
+    return `
+      <div class="barcol">
+        <b>${val}</b>
+        <div class="bar" style="height:${height}px" title="${label}: ${val}"></div>
+        <small>${label}</small>
+      </div>
+    `;
+  }).join('');
+}
+
+function downloadCSV() {
+  window.location.href = `${API_BASE}/api/export`;
+}
+
+function speakPage() {
+  const text = document.querySelector('.page.active').innerText;
+  if ('speechSynthesis' in window) {
+    speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'pt-BR';
+    speechSynthesis.speak(utterance);
+    toast('Iniciando leitura em voz alta…');
+  } else {
+    toast('Leitura de voz não suportada neste navegador.');
+  }
+}
+
+/* ============================================================
+   DESENVOLVEDOR CHEFE (Painel Administrativo)
+   ============================================================ */
+function checkAdminView() {
+  const gate = document.getElementById('adminGate');
+  const content = document.getElementById('adminContent');
+  if (currentUser && currentUser.role === 'admin') {
+    gate.style.display = 'none';
+    content.style.display = 'block';
+    loadAdminData();
+  } else {
+    gate.style.display = 'block';
+    content.style.display = 'none';
+  }
+}
+
+async function adminDirectLogin() {
+  const email = document.getElementById('adminUserField').value.trim();
+  const password = document.getElementById('adminPassField').value;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      toast(data.detail || 'Usuário ou senha de Desenvolvedor incorretos.');
+      return;
+    }
+
+    authToken = data.token;
+    currentUser = data.user;
+    localStorage.setItem('ecorota_token', authToken);
+    localStorage.setItem('ecorota_user', JSON.stringify(currentUser));
+
+    renderProfile();
+    toast('Acesso concedido: Bem-vindo, Desenvolvedor Chefe!');
+    checkAdminView();
+  } catch (err) {
+    toast('Erro de conexão ao autenticar Desenvolvedor.');
+  }
+}
+
+function switchAdminTab(tabId) {
+  document.querySelectorAll('.admin-pane').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.admin-tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(tabId).style.display = 'block';
+  event.target.classList.add('active');
+}
+
+async function loadAdminData() {
+  try {
+    const res = await api('/api/admin/data');
+    if (!res.ok) throw new Error('Não autorizado');
+    const data = await res.json();
+    adminDataCache = data.tables;
+
+    // Counters
+    document.getElementById('cntPoints').textContent = adminDataCache.collection_points.length;
+    document.getElementById('cntUsers').textContent = adminDataCache.users.length;
+    document.getElementById('cntOffers').textContent = adminDataCache.recycling_offers.length;
+    document.getElementById('cntActions').textContent = adminDataCache.eco_actions.length;
+    document.getElementById('cntAnalyses').textContent = adminDataCache.waste_analyses.length;
+
+    renderAdminPoints(adminDataCache.collection_points);
+    renderAdminUsers(adminDataCache.users);
+    renderAdminOffers(adminDataCache.recycling_offers);
+    renderAdminActions(adminDataCache.eco_actions);
+    renderAdminAnalyses(adminDataCache.waste_analyses);
+  } catch (err) {
+    toast('Falha ao carregar tabelas do banco de dados.');
+  }
+}
+
+function renderAdminPoints(points) {
+  const tb = document.getElementById('tbodyPoints');
+  tb.innerHTML = points.map(p => `
+    <tr>
+      <td><b>${esc(p.name)}</b></td>
+      <td>${esc(p.materials)}</td>
+      <td>${esc(p.municipality)} ${p.address ? '<br><small style="color:#777">'+esc(p.address)+'</small>' : ''}</td>
+      <td><code>${Number(p.latitude).toFixed(4)}, ${Number(p.longitude).toFixed(4)}</code></td>
+      <td>
+        <span class="pill ${p.verified ? 'pill-verified' : 'pill-pending'}">
+          ${p.verified ? 'Verificado' : 'Em Análise'}
+        </span>
+      </td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-outline btn-xs" onclick="adminTogglePoint('${p.id}')">
+            ${p.verified ? 'Desmarcar' : 'Aprovar'}
+          </button>
+          <button class="btn btn-danger btn-xs" onclick="adminDeletePoint('${p.id}')">Excluir</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderAdminUsers(users) {
+  const tb = document.getElementById('tbodyUsers');
+  tb.innerHTML = users.map(u => `
+    <tr>
+      <td><b>${esc(u.display_name)}</b></td>
+      <td>${esc(u.email)}</td>
+      <td>
+        <select onchange="adminChangeRole('${u.id}', this.value)" style="font-size:10px;padding:3px;border-radius:6px">
+          <option value="resident" ${u.role === 'resident' ? 'selected' : ''}>Morador</option>
+          <option value="tourist" ${u.role === 'tourist' ? 'selected' : ''}>Turista</option>
+          <option value="business" ${u.role === 'business' ? 'selected' : ''}>Comércio</option>
+          <option value="recycler" ${u.role === 'recycler' ? 'selected' : ''}>Reciclador</option>
+          <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin (Chefe)</option>
+        </select>
+      </td>
+      <td>${esc(u.municipality || 'Não informado')}</td>
+      <td>${new Date(u.created_at).toLocaleDateString('pt-BR')}</td>
+      <td>
+        ${u.role !== 'admin' ? `<button class="btn btn-danger btn-xs" onclick="adminDeleteUser('${u.id}')">Excluir</button>` : '<span style="font-size:10px;color:#888">Root</span>'}
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderAdminOffers(offers) {
+  const tb = document.getElementById('tbodyOffers');
+  tb.innerHTML = offers.map(o => `
+    <tr>
+      <td><b>${esc(o.material)}</b></td>
+      <td>${esc(o.quantity)}</td>
+      <td>${esc(o.municipality)}</td>
+      <td>${esc(o.contact || 'Sem contato')}${o.notes ? '<br><small style="color:#777">'+esc(o.notes)+'</small>' : ''}</td>
+      <td>
+        <select onchange="adminChangeOfferStatus('${o.id}', this.value)" style="font-size:10px;padding:3px;border-radius:6px">
+          <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Disponível (Pending)</option>
+          <option value="matched" ${o.status === 'matched' ? 'selected' : ''}>Em Coleta (Matched)</option>
+          <option value="closed" ${o.status === 'closed' ? 'selected' : ''}>Concluído (Closed)</option>
+          <option value="rejected" ${o.status === 'rejected' ? 'selected' : ''}>Cancelado</option>
+        </select>
+      </td>
+      <td>
+        <button class="btn btn-danger btn-xs" onclick="adminDeleteOffer('${o.id}')">Excluir</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderAdminActions(actions) {
+  const tb = document.getElementById('tbodyActions');
+  tb.innerHTML = actions.map(a => `
+    <tr>
+      <td><b>${esc(a.user_name || 'Usuário')}</b><br><small style="color:#777">${esc(a.user_email || '')}</small></td>
+      <td>${esc(a.action_type)}</td>
+      <td>${esc(a.description)}</td>
+      <td><b>+${a.points_awarded} EP</b></td>
+      <td>
+        <span class="pill ${a.status === 'approved' ? 'pill-verified' : 'pill-pending'}">${esc(a.status)}</span>
+      </td>
+      <td>
+        <div style="display:flex;gap:4px">
+          ${a.status !== 'approved' ? `<button class="btn btn-green btn-xs" onclick="adminChangeActionStatus('${a.id}', 'approved')">Aprovar</button>` : ''}
+          ${a.status !== 'rejected' ? `<button class="btn btn-warn btn-xs" onclick="adminChangeActionStatus('${a.id}', 'rejected')">Rejeitar</button>` : ''}
+          <button class="btn btn-danger btn-xs" onclick="adminDeleteAction('${a.id}')">Excluir</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderAdminAnalyses(analyses) {
+  const tb = document.getElementById('tbodyAnalyses');
+  tb.innerHTML = analyses.map(an => `
+    <tr>
+      <td><b>${esc(an.category)}</b></td>
+      <td>${esc(an.confidence)}</td>
+      <td><span class="pill">${esc(an.mode)}</span></td>
+      <td>
+        ${an.visual_observation ? `<i>${esc(an.visual_observation)}</i><br>` : ''}
+        <small style="color:#666">${esc(an.guidance || '')}</small>
+      </td>
+      <td>${new Date(an.created_at).toLocaleString('pt-BR')}</td>
+      <td>
+        <button class="btn btn-danger btn-xs" onclick="adminDeleteAnalysis('${an.id}')">Excluir</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function adminTogglePoint(id) {
+  try {
+    const res = await api(`/api/admin/points/${id}/toggle-verify`, { method: 'POST' });
+    if (res.ok) {
+      toast('Status de verificação do ponto atualizado!');
+      loadAdminData();
+      loadPoints();
+    }
+  } catch (err) { toast('Erro ao alterar status do ponto.'); }
+}
+
+async function adminDeletePoint(id) {
+  if (!confirm('Tem certeza que deseja excluir este ponto do banco de dados?')) return;
+  try {
+    const res = await api(`/api/admin/points/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      toast('Ponto excluído com sucesso.');
+      loadAdminData();
+      loadPoints();
+      loadStats();
+    }
+  } catch (err) { toast('Erro ao excluir ponto.'); }
+}
+
+async function adminChangeRole(userId, newRole) {
+  try {
+    const res = await api(`/api/admin/users/${userId}/role`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: newRole })
+    });
+    if (res.ok) {
+      toast(`Perfil do usuário alterado para ${newRole}.`);
+      loadAdminData();
+    }
+  } catch (err) { toast('Erro ao alterar perfil.'); }
+}
+
+async function adminDeleteUser(userId) {
+  if (!confirm('Deseja excluir este usuário do banco de dados? Todas as suas ações também serão removidas.')) return;
+  try {
+    const res = await api(`/api/admin/users/${userId}`, { method: 'DELETE' });
+    if (res.ok) {
+      toast('Usuário excluído.');
+      loadAdminData();
+    }
+  } catch (err) { toast('Erro ao excluir usuário.'); }
+}
+
+async function adminChangeOfferStatus(offerId, status) {
+  try {
+    const res = await api(`/api/admin/offers/${offerId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    if (res.ok) {
+      toast('Status da oferta atualizado.');
+      loadAdminData();
+      loadOffers();
+    }
+  } catch (err) { toast('Erro ao alterar status da oferta.'); }
+}
+
+async function adminDeleteOffer(offerId) {
+  if (!confirm('Excluir esta oferta de material reciclável?')) return;
+  try {
+    const res = await api(`/api/admin/offers/${offerId}`, { method: 'DELETE' });
+    if (res.ok) {
+      toast('Oferta excluída do mural.');
+      loadAdminData();
+      loadOffers();
+      loadStats();
+    }
+  } catch (err) { toast('Erro ao excluir oferta.'); }
+}
+
+async function adminChangeActionStatus(actionId, status) {
+  try {
+    const res = await api(`/api/admin/actions/${actionId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    if (res.ok) {
+      toast(`Ação ${status === 'approved' ? 'aprovada (+20 EP)' : 'rejeitada'}.`);
+      loadAdminData();
+      loadStats();
+    }
+  } catch (err) { toast('Erro ao alterar status da ação.'); }
+}
+
+async function adminDeleteAction(actionId) {
+  if (!confirm('Excluir este registro de ação do banco?')) return;
+  try {
+    const res = await api(`/api/admin/actions/${actionId}`, { method: 'DELETE' });
+    if (res.ok) {
+      toast('Ação excluída.');
+      loadAdminData();
+      loadStats();
+    }
+  } catch (err) { toast('Erro ao excluir ação.'); }
+}
+
+async function adminDeleteAnalysis(id) {
+  if (!confirm('Excluir esta análise do histórico?')) return;
+  try {
+    const res = await api(`/api/admin/analyses/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      toast('Análise excluída.');
+      loadAdminData();
+      loadStats();
+    }
+  } catch (err) { toast('Erro ao excluir análise.'); }
+}
+
+function downloadAdminJSON() {
+  window.location.href = `${API_BASE}/api/admin/backup-json`;
+}
+
+/* ============================================================
+   Application Initialization
+   ============================================================ */
+async function initApp() {
+  renderProfile();
+  await loadPoints();
+  await loadOffers();
+  await loadStats();
+  if (currentUser) {
+    await loadUserData();
+    if (currentUser.role === 'admin') checkAdminView();
+  }
+}
+
+initApp();
+</script>
+</body>
+</html>
